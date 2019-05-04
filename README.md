@@ -1,2 +1,0 @@
-# Pollution
-Pollution in Erlang
