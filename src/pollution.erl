@@ -41,17 +41,24 @@ addUniqueValue(Id, Date, Type, Value, Stations, Data) ->
   end.
 
 removeValue(Id, Date, Type, #monitor{stationMap = Stations, dataMap = Data}) ->
-  maps:remove(#data{id=Id, date = Date, type = Type}, Data),
-  #monitor{stationMap = Stations, dataMap = Data}.
+  case maps:is_key(#data{id = Id, date = Date, type = Type}, Data) of
+    false -> throw("This value does not exist");
+    true ->
+      maps:remove(#data{id=Id, date = Date, type = Type}, Data),
+      #monitor{stationMap = Stations, dataMap = Data}
+  end.
 
 getOneValue(Id, Date, Type, #monitor{stationMap = _, dataMap = Data}) ->
   maps:get(#data{id=Id, date =Date, type = Type}, Data, "There is no measurement with this atributes").
 
 getStationMean(Id, Type, #monitor{stationMap = Stations, dataMap = Data}) ->
-  Station = maps:get(Id, Stations),
-  case is_tuple(Id) of
-    true -> meanByStation(Data, Type, Id, Station#station.name);
-    false -> meanByStation(Data, Type, Id, Station#station.coordinates)
+  case maps:is_key(Id, Stations) of
+    false -> throw("Station does not exist");
+    true ->
+      case is_tuple(Id) of
+        true -> meanByStation(Data, Type, Id, (maps:get(Id, Stations))#station.name);
+        false -> meanByStation(Data, Type, Id, (maps:get(Id, Stations))#station.coordinates)
+      end
   end.
 
 meanByStation(Data, TypeMean, IdMean, IdMean2) ->
@@ -62,7 +69,7 @@ meanByStation(Data, TypeMean, IdMean, IdMean2) ->
 
 mean(List) ->
   case length(List,0) of
-    0-> throw("dzielenie przez zero");
+    0-> throw("There are no measurements. Cannot compute mean therefore.");
     _-> lists:sum(List) / length(List,0)
   end.
 
@@ -84,7 +91,12 @@ getMaximumGradientStations(#monitor{stationMap = Stations, dataMap = Data}) ->
 uniqueTypes(Map) ->
   sets:to_list(sets:from_list([ (element(1,X))#data.type || X<-maps:to_list(Map)])).
 
-getMaxGradient(_,_, [],Max) -> Max;
+getMaxGradient(_,_, [],Max) ->
+  case Max of
+    {0,{-100,-100},{-100,-100}} ->
+      throw("Lack of measurements for gradient computation. Required at least one parameter measured at 2 different stations.");
+    _ -> Max
+  end;
 getMaxGradient(Stations, Data, [TypeGradient|Tail], Max) ->
   getMaxGradient(Stations,Data,Tail,
     maxOfType(Stations, maps:filter(fun(#data{id=_,date=_, type=Type},_)->Type==TypeGradient end, Data), Max)).
