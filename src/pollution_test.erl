@@ -29,10 +29,13 @@ getOneValue_test() ->
   ?assertEqual(50, getOneValue("Fifth Avenue", {{2000,10,10},{2,10,10}}, "PM10", monitor_prep())).
 
 getDailyMean_test() ->
-  ?assertEqual(100.0, getDailyMean("PM10", {2000,10,10}, monitor_prep())).
+  ?assertEqual(34.0, getDailyMean("PM10", {2000,10,10}, monitor_prep())).
 
 getStationMean_test() ->
-  ?assertEqual(125.0, getStationMean({3,4}, "PM10", monitor_prep())).
+  ?assertEqual(26.0, getStationMean({3,4}, "PM10", monitor_prep())).
 
 removeValue_test() ->
   ?assertEqual(50.0, getStationMean("Fifth Avenue", "PM10", removeValue("Fifth Avenue", {{2000,10,10},{10,40,10}}, "PM10", monitor_prep()))).
+
+getMaximumGradientStations_test() ->
+  ?assertEqual({9.6,{3,4},{0,0}}, getMaximumGradientStations(monitor_prep())).

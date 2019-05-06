@@ -44,8 +44,7 @@ removeValue(Id, Date, Type, #monitor{stationMap = Stations, dataMap = Data}) ->
   case maps:is_key(#data{id = Id, date = Date, type = Type}, Data) of
     false -> throw("This value does not exist");
     true ->
-      maps:remove(#data{id=Id, date = Date, type = Type}, Data),
-      #monitor{stationMap = Stations, dataMap = Data}
+      #monitor{stationMap = Stations, dataMap = maps:remove(#data{id=Id, date = Date, type = Type}, Data)}
   end.
 
 getOneValue(Id, Date, Type, #monitor{stationMap = _, dataMap = Data}) ->
@@ -72,7 +71,6 @@ mean(List) ->
     0-> throw("There are no measurements. Cannot compute mean therefore.");
     _-> lists:sum(List) / length(List,0)
   end.
-
 
 length([],Sum)->Sum;
 length([_|B],Sum)->length(B, 1+Sum).
@@ -104,7 +102,8 @@ getMaxGradient(Stations, Data, [TypeGradient|Tail], Max) ->
 maxOfType(Stations, DataOfType, Max) ->
   foldType([gradient( element(2,X), element(2,Y), nameToCoordinates(Stations, (element(1,X))#data.id),
     nameToCoordinates(Stations, (element(1,Y))#data.id) ) ||
-    X<-maps:to_list(DataOfType), Y<-maps:to_list(DataOfType), X/=Y],
+    X<-maps:to_list(DataOfType), Y<-maps:to_list(DataOfType),
+    nameToCoordinates(Stations, (element(1,X))#data.id)/=nameToCoordinates(Stations, (element(1,Y))#data.id)],
     Max).
 
 foldType([],Max) -> Max;
@@ -122,7 +121,7 @@ nameToCoordinates(Stations, Id) ->
   end.
 
 gradient(A1, A2, Coo1, Coo2) ->
-  { (absolute(A2-A1) / distance(Coo1, Coo2)) , Coo1, Coo2}.
+  { (absolute(A2-A1) / distance(Coo1, Coo2)) , Coo1, Coo2 }.
 
 distance({X1,Y1},{X2,Y2}) ->
   math:sqrt(math:pow(X2-X1,2)+math:pow(Y2-Y1,2)).
