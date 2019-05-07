@@ -12,10 +12,6 @@
 %% API
 -include_lib("eunit/include/eunit.hrl").
 
--import(pollution, [createMonitor/0, addStation/3, addValue/5]).
--import(pollution, [removeValue/4, getOneValue/4,getStationMean/3]).
--import(pollution, [getDailyMean/3, getMaximumGradientStations/1]).
-
 monitor_prep() ->
   pollution:addValue("Fifth Avenue", {{2000,10,10},{10,40,10}}, "PM10", 2,
     pollution:addValue("221B Baker Street", calendar:local_time(), "PM10", 4,
@@ -26,16 +22,17 @@ monitor_prep() ->
                 pollution:createMonitor())))))).
 
 getOneValue_test() ->
-  ?assertEqual(50, getOneValue("Fifth Avenue", {{2000,10,10},{2,10,10}}, "PM10", monitor_prep())).
+  ?assertEqual(50, pollution:getOneValue("Fifth Avenue", {{2000,10,10},{2,10,10}}, "PM10", monitor_prep())).
 
 getDailyMean_test() ->
-  ?assertEqual(34.0, getDailyMean("PM10", {2000,10,10}, monitor_prep())).
+  ?assertEqual(34.0, pollution:getDailyMean("PM10", {2000,10,10}, monitor_prep())).
 
 getStationMean_test() ->
-  ?assertEqual(26.0, getStationMean({3,4}, "PM10", monitor_prep())).
+  ?assertEqual(26.0, pollution:getStationMean({3,4}, "PM10", monitor_prep())).
 
 removeValue_test() ->
-  ?assertEqual(50.0, getStationMean("Fifth Avenue", "PM10", removeValue("Fifth Avenue", {{2000,10,10},{10,40,10}}, "PM10", monitor_prep()))).
+  ?assertEqual(50.0, pollution:getStationMean("Fifth Avenue", "PM10",
+    pollution:removeValue("Fifth Avenue", {{2000,10,10},{10,40,10}}, "PM10", monitor_prep()))).
 
 getMaximumGradientStations_test() ->
-  ?assertEqual({9.6,{3,4},{0,0}}, getMaximumGradientStations(monitor_prep())).
+  ?assertEqual({9.6,{3,4},{0,0}}, pollution:getMaximumGradientStations(monitor_prep())).
